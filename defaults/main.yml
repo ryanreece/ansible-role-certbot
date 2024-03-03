@@ -1,0 +1,4 @@
+letsencrypt_email: default@example.com
+digitalocean_secrets_file: ~/.secrets/certbot/digitalocean.ini
+domain_name: example.com
+docker_certs_container: temp-certs-container

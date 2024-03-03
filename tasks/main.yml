@@ -1,0 +1,47 @@
+- name: Request SSL Cert from Let's Encrypt
+  ansible.builtin.shell: |
+    docker run --rm \
+      --name certbot \
+      --volume {{ digitalocean_secrets_file }}:/tmp/digitalocean.ini \
+      --volume certs:/etc/letsencrypt \
+      certbot/dns-digitalocean certonly \
+      --dns-digitalocean \
+      --dns-digitalocean-credentials /tmp/digitalocean.ini \
+      --email {{ letsencrypt_email }} \
+      --agree-tos \
+      --non-interactive \
+      -d {{ domain_name }} \
+      -d '*.{{ domain_name }}'
+  register: certbot_output
+  changed_when: "'Certificate not yet due for renewal' not in certbot_output.stdout"
+    
+- name: Track cert renewal status
+  ansible.builtin.set_fact:
+    cert_renewed: "{{ 'Certificate not yet due for renewal' not in certbot_output.stdout }}"
+  when: certbot_output.stdout is defined
+
+- name: Create temporary docker container to access certs volume and dereference symlinks
+  ansible.builtin.shell: |
+    docker run --rm -d \
+      --name {{ docker_certs_container }} \
+      --volume certs:/etc/letsencrypt \
+      alpine:latest \
+      tail -f /dev/null
+    docker exec {{ docker_certs_container }} sh -c 'cp $(readlink -f /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem) /tmp/fullchain.pem'
+    docker exec {{ docker_certs_container }} sh -c 'cp $(readlink -f /etc/letsencrypt/live/{{ domain_name }}/cert.pem) /tmp/cert.pem'
+    docker exec {{ docker_certs_container }} sh -c 'cp $(readlink -f /etc/letsencrypt/live/{{ domain_name }}/chain.pem) /tmp/chain.pem'
+    docker exec {{ docker_certs_container }} sh -c 'cp $(readlink -f /etc/letsencrypt/live/{{ domain_name }}/privkey.pem) /tmp/privkey.pem'
+  when: cert_renewed
+
+- name: Copy certificates from volume to host
+  ansible.builtin.shell: "docker cp {{ docker_certs_container }}:/tmp/{{ item }} ./files/{{ item }}"
+  loop:
+    - fullchain.pem
+    - cert.pem
+    - chain.pem
+    - privkey.pem
+  when: cert_renewed
+
+- name: Stop and remove temporary container
+  ansible.builtin.shell: docker stop {{ docker_certs_container }}
+  when: cert_renewed
