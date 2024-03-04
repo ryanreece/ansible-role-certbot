@@ -1,6 +1,8 @@
 letsencrypt_email: default@example.com
 digitalocean_secrets_file: ~/.secrets/certbot/digitalocean.ini
 domain_name: example.com
-docker_certs_container: temp-certs-container
+docker_certbot_proxy_container: certbot-proxy-container
+docker_certbot_container: certbot
+docker_certs_volume: certs
 ssl_certs_hosts_location: /tmp/
 force_cert_copy: False
