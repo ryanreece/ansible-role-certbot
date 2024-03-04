@@ -34,7 +34,7 @@
   when: cert_renewed
 
 - name: Copy certificates from volume to host
-  ansible.builtin.shell: "docker cp {{ docker_certs_container }}:/tmp/{{ item }} ./files/{{ item }}"
+  ansible.builtin.shell: "docker cp {{ docker_certs_container }}:/tmp/{{ item }} {{ ssl_certs_hosts_location }}{{ item }}"
   loop:
     - fullchain.pem
     - cert.pem
