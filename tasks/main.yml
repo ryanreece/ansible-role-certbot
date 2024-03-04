@@ -44,4 +44,4 @@
 
 - name: Stop and remove {{ docker_certbot_proxy_container }} 
   ansible.builtin.shell: docker stop {{ docker_certbot_proxy_container }}
-  when: cert_renewed
+  when: cert_renewed or force_cert_copy
