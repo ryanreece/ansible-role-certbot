@@ -3,3 +3,4 @@ digitalocean_secrets_file: ~/.secrets/certbot/digitalocean.ini
 domain_name: example.com
 docker_certs_container: temp-certs-container
 ssl_certs_hosts_location: /tmp/
+force_cert_copy: False

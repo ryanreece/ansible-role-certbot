@@ -31,7 +31,9 @@
     docker exec {{ docker_certs_container }} sh -c 'cp $(readlink -f /etc/letsencrypt/live/{{ domain_name }}/cert.pem) /tmp/cert.pem'
     docker exec {{ docker_certs_container }} sh -c 'cp $(readlink -f /etc/letsencrypt/live/{{ domain_name }}/chain.pem) /tmp/chain.pem'
     docker exec {{ docker_certs_container }} sh -c 'cp $(readlink -f /etc/letsencrypt/live/{{ domain_name }}/privkey.pem) /tmp/privkey.pem'
-  when: cert_renewed
+  when:
+    - cert_renewed
+    - not force_cert_copy
 
 - name: Copy certificates from volume to host
   ansible.builtin.shell: "docker cp {{ docker_certs_container }}:/tmp/{{ item }} {{ ssl_certs_hosts_location }}{{ item }}"
@@ -40,7 +42,9 @@
     - cert.pem
     - chain.pem
     - privkey.pem
-  when: cert_renewed
+  when:
+    - cert_renewed
+    - not force_cert_copy
 
 - name: Stop and remove temporary container
   ansible.builtin.shell: docker stop {{ docker_certs_container }}

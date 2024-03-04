@@ -17,6 +17,7 @@ This Ansible role requests SSL certificates from Let's Encrypt using Docker and 
 | `domain_name`               | Domain name for the SSL certificate.               | `example.com`                   |
 | `docker_certs_container`    | Name of the temporary Docker container.            | `default-certs-container`       |
 | `ssl_certs_hosts_location`  | Host machine location where certs will be saved.   | `/tmp/`                         |
+| `force_cert_copy`           | Determines whether to copy the certs to the host regardless if the certs are eligible for renewal | `False` |
 
 ## Example Playbook
 
@@ -32,6 +33,7 @@ Including an example of how to use your role in a playbook:
         domain_name: example.com
         docker_certs_container: temp-certs-container
         ssl_certs_hosts_location: /tmp/
+        force_cert_copy: True
 ```
 
 ### requirements.yml
